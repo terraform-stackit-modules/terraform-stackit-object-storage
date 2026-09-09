@@ -7,6 +7,34 @@ This file provides context and instructions for AI coding agents (Copilot, Curso
 This is a Terraform module for [STACKIT](https://www.stackit.de/en/), the cloud platform by Schwarz Group.
 It is part of the [terraform-stackit-modules](https://github.com/terraform-stackit-modules) organization, which aims to provide community-maintained, production-grade Terraform modules for STACKIT.
 
+### This module: object-storage
+
+Manages a STACKIT **Object Storage bucket** and its S3 **credentials groups / credentials**,
+plus optional **Object Lock**, a project **compliance lock** and a bucket **default-retention** policy.
+
+**Resources managed**
+- `stackit_objectstorage_compliance_lock` — project-scoped, toggled by `create_compliance_lock` (via `count`).
+- `stackit_objectstorage_bucket` — the bucket (toggled by `create_bucket`, via `count`; `depends_on` the compliance lock so `object_lock = true` works).
+- `stackit_objectstorage_credentials_group` — 0..N groups, `for_each` over `var.credentials_groups`.
+- `stackit_objectstorage_credential` — 0..N credentials, `for_each` over a flattened `<group_key>/<credential_name>` local.
+- `stackit_objectstorage_default_retention` — optional per-bucket retention (created when `var.default_retention != null`).
+
+**Key inputs** — `project_id` (req), `name` (req, DNS-conform), `create_bucket`, `object_lock`,
+`create_compliance_lock` (default false), `default_retention` (`{ days, mode }`, mode ∈ GOVERNANCE|COMPLIANCE),
+`region`, and `credentials_groups` (map of `{ name, credentials = [{ name, expiration_timestamp? }] }`).
+
+**Outputs** — `bucket_name`, `bucket_url_path_style`, `bucket_url_virtual_hosted_style`,
+`credentials_group_ids`, `credential_access_keys`, `credential_secret_access_keys` (sensitive),
+`compliance_lock_max_retention_days`, `default_retention_id`.
+
+**Gotchas**
+- `secret_access_key` is a secret → `credential_secret_access_keys` output is `sensitive = true`.
+- **The compliance lock is project-scoped and IRREVERSIBLE** — only one per project, and it cannot be
+  destroyed. Never enable `create_compliance_lock` in a throwaway test; `examples/basic` leaves it off
+  so the Terratest run stays reversible.
+- `object_lock` can only be set at bucket creation and requires an active compliance lock (hence the `depends_on`).
+- A bucket cannot be destroyed while it still contains objects.
+
 ## Repository structure
 
 ```
