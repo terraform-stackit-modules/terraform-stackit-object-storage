@@ -4,8 +4,21 @@
 # to build your own root module that invokes this module
 #####################################################################################
 
-module "example" {
+module "object_storage" {
   source = "../.."
 
   project_id = var.project_id
+  name       = "example-bucket-tf-stackit"
+
+  credentials_groups = {
+    app = {
+      name = "example-app-credentials"
+      credentials = [
+        {
+          name                 = "primary"
+          expiration_timestamp = "2027-01-02T03:04:05Z"
+        },
+      ]
+    }
+  }
 }
