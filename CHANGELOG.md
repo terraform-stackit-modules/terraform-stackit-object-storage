@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## 1.0.0 (2026-09-09)
+
+### Features
+
+* implement object storage module with buckets, credentials, compliance lock and retention ([d091f9f](https://github.com/terraform-stackit-modules/terraform-stackit-object-storage/commit/d091f9f688fe79ba9a9a35a03b7feaf9de52ba2c))
+
 ## 1.0.0 (2026-09-04)
 
 ### Features
